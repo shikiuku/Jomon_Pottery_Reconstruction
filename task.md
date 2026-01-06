@@ -11,9 +11,10 @@
 - [x] Add Floor and Gravity (Physics Setup) <!-- id: 12 -->
 
 ## Phase 3: Feasibility Verification (Technical Proof of Concept)
-- [ ] Check 1: Verify Fracture Label Extraction (Inner vs Outer) <!-- id: 30 -->
-- [ ] Check 2: Verify Adjacency Extraction (Who connects to whom?) <!-- id: 31 -->
-- [ ] Check 3: Verify RBDLab Automation via Python <!-- id: 32 -->
+- [x] Check 1: Verify Fracture Label Extraction (Inner vs Outer) <!-- id: 30 -->
+- [x] Check 2: Verify Adjacency Extraction (Who connects to whom?) <!-- id: 31 -->
+- [x] Check 2.5: Verify Facet Segmentation (Count & Color Islands) <!-- id: 35 -->
+- [x] Check 3: Verify RBDLab Automation via Python <!-- id: 32 -->
 - [ ] Check 4: Verify Point Cloud & CSV Export <!-- id: 33 -->
 
 ## Phase 4: AI Training Data Generation (Sim2Real)
