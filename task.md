@@ -12,8 +12,9 @@
 
 ## Phase 3: Feasibility Verification (Technical Proof of Concept)
 - [x] Check 1: Verify Fracture Label Extraction (Inner vs Outer) <!-- id: 30 -->
-- [x] Check 2: Verify Adjacency Extraction (Who connects to whom?) <!-- id: 31 -->
 - [x] Check 2.5: Verify Facet Segmentation (Count & Color Islands) <!-- id: 35 -->
+- [x] Check 2.7: Adjacency-Based Facet Splitting (V3) <!-- id: 36 -->
+- [ ] Check 2: Adjacency Extraction (Connect pair of shards) <!-- id: 5 -->
 - [x] Check 3: Verify RBDLab Automation via Python <!-- id: 32 -->
 - [ ] Check 4: Verify Point Cloud & CSV Export <!-- id: 33 -->
 
