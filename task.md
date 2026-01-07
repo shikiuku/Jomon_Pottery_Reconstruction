@@ -17,7 +17,7 @@
 - [x] Check 2.8: Majority-Vote & Smoothing Segmentation (V6) <!-- id: 37 -->
 - [x] Check 2: Adjacency Extraction (Connect pair of shards with lines) <!-- id: 5 -->
 - [x] Check 3: Verify RBDLab Automation via Python <!-- id: 32 -->
-- [ ] Check 4: Verify Point Cloud & CSV Export <!-- id: 33 -->
+- [x] Check 4: Verify Point Cloud & CSV Export <!-- id: 33 -->
 
 ## Phase 4: AI Training Data Generation (Sim2Real)
 - [x] Create AI Training Plan (Augmentation & Labels) <!-- id: 20 -->

@@ -82,39 +82,69 @@ def setup_dynamic_visualization():
 
     # 3. Pair and Create Static Line Objects (to be updated dynamically)
     matched_count = 0
+    # Create a list of pairs to avoid double-processing
+    processed_pairs = set()
+
+    # Threshold for matching at Frame 1
+    # Set high to 2.0m to allow matching by label even if centroids are far apart.
+    MATCH_DIST_THRESHOLD = 2.0 
+
     for i, f1 in enumerate(facet_data):
+        obj1_name = f1['obj_name']
+        nb1_name = f1['nb_name']
+        if nb1_name == "NONE": continue
+        
+        # Best candidate for f1
+        best_candidate = None
+        min_match_dist = 1000.0
+
         for j, f2 in enumerate(facet_data):
-            if i >= j: continue
-            if f1['nb_name'] == f2['obj_name'] and f2['nb_name'] == f1['obj_name']:
-                if (f1['f1_pos'] - f2['f1_pos']).length < 0.005:
-                    # Create a simple 2-vertex mesh
-                    mesh = bpy.data.meshes.new(f"L_{matched_count}")
-                    line_obj = bpy.data.objects.new(f"Line_{matched_count}", mesh)
-                    line_col.objects.link(line_obj)
-                    
-                    # Store data for the handler to use
-                    line_obj["pair_info"] = [f1['obj_name'], f1['mat_name'], f2['obj_name'], f2['mat_name']]
-                    
-                    # Initialize with 2 vertices
-                    bm = bmesh.new()
-                    bm.verts.new((0,0,0))
-                    bm.verts.new((0,0,0))
-                    bm.edges.new(bm.verts)
-                    bm.to_mesh(mesh)
-                    bm.free()
-                    matched_count += 1
+            if i == j: continue
+            obj2_name = f2['obj_name']
+            nb2_name = f2['nb_name']
+            
+            # Basic Identity Check: A points to B AND B points to A
+            if nb1_name == obj2_name and nb2_name == obj1_name:
+                dist = (f1['f1_pos'] - f2['f1_pos']).length
+                if dist < MATCH_DIST_THRESHOLD and dist < min_match_dist:
+                    min_match_dist = dist
+                    best_candidate = j
+
+        if best_candidate is not None:
+            j = best_candidate
+            f2 = facet_data[j]
+            # Unique key for the pair
+            pair_ids = sorted([f1['mat_name'] + f1['obj_name'], f2['mat_name'] + f2['obj_name']])
+            pair_key = "_".join(pair_ids)
+            
+            if pair_key not in processed_pairs:
+                processed_pairs.add(pair_key)
+                # Create Line Object
+                mesh = bpy.data.meshes.new(f"L_{matched_count}")
+                line_obj = bpy.data.objects.new(f"Line_{matched_count}", mesh)
+                line_col.objects.link(line_obj)
+                
+                line_obj["pair_info"] = [f1['obj_name'], f1['mat_name'], f2['obj_name'], f2['mat_name']]
+                
+                bm = bmesh.new()
+                bm.verts.new((0,0,0))
+                bm.verts.new((0,0,0))
+                bm.edges.new(bm.verts)
+                bm.to_mesh(mesh)
+                bm.free()
+                matched_count += 1
 
     # Return to current frame
     bpy.context.scene.frame_set(current_frame)
+    bpy.context.view_layer.update()
     
     # 4. Register the Handler
-    # Remove existing to avoid duplicates
     bpy.app.handlers.frame_change_post.clear()
     bpy.app.handlers.frame_change_post.append(update_adjacency_lines)
     
     # Run once immediately
     update_adjacency_lines(bpy.context.scene)
     
-    return f"Dynamic Visualization Ready: {matched_count} lines registered."
+    return f"Dynamic Visualization Updated: {matched_count} lines registered."
 
 print(setup_dynamic_visualization())
