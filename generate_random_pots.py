@@ -34,19 +34,20 @@ def create_random_pot(name, location):
         # Variance Factor: CENTER OF GRAVITY & STOUTNESS
         
         # Stoutness: Wide vs Slender
-        # User requested: "Belly 20cm - 40cm"
-        max_width = random.uniform(0.20, 0.40)
+        # User requested: "Allow Bucket shapes too"
+        # 25cm - 40cm range allows for both slender cylinders and typical jars.
+        max_width = random.uniform(0.25, 0.40)
         # aspect_ratio = max_width / total_height (Implicit)
         
         # 1. BELLY POSITION (Center of Gravity)
-        # Slightly lower center of gravity is more stable and common.
-        belly_h_ratio = random.uniform(0.35, 0.60)
+        # 0.35 (Low/Stable) to 0.75 (High Shoulder/Bucket-like)
+        belly_h_ratio = random.uniform(0.35, 0.75)
         belly_h = total_height * belly_h_ratio
         
         # 2. NECK DEFINITION
         # Neck width relative to belly
-        # Natural neck constriction.
-        neck_w_ratio = random.uniform(0.35, 0.55)
+        # 0.35 = Tight (Jar), 1.0 = Straight (Cylinder/No Neck)
+        neck_w_ratio = random.uniform(0.35, 1.0)
         neck_w = max_width * neck_w_ratio
         
         # Neck Height (Distance from belly to rim)
@@ -55,13 +56,13 @@ def create_random_pot(name, location):
         neck_h = total_height * neck_h_ratio
         
         # 3. RIM FLARE
-        # Balanced flare (neither extreme inward nor trumpet)
-        rim_flare_ratio = random.uniform(1.1, 1.4)
+        # 0.85 (Inverted/No Mouth) to 1.35 (Flare)
+        rim_flare_ratio = random.uniform(0.85, 1.35)
         rim_w = neck_w * rim_flare_ratio
         
         # Bottom (Stable)
-        # User requested: "Bottom 10cm - 20cm"
-        bottom_w = random.uniform(0.10, 0.20)
+        # 10cm (Tapered) to 35cm (Wide/Bucket Base)
+        bottom_w = random.uniform(0.10, 0.35)
 
         # Topology
         p1_bot_flat = [bottom_w * 0.8, 0, 0]
@@ -137,7 +138,8 @@ def create_random_pot(name, location):
     # 2. Add Screw Modifier and Solidify
     screw_mod = curve_obj.modifiers.new(name="Screw", type='SCREW')
     screw_mod.axis = 'Z'
-    screw_mod.steps = 64 
+    # User requested: "Reduce vertex count". 64 -> 32
+    screw_mod.steps = 32 
     screw_mod.use_merge_vertices = True 
     screw_mod.merge_threshold = 0.001
     screw_mod.use_smooth_shade = True 
@@ -199,6 +201,11 @@ def create_random_pot(name, location):
     # Set Object color for viewport (Solid mode)
     mesh_obj.color = (0.8, 0.8, 0.8, 1)
     
+    # --- ADD WEATHERING (Excavated Look) ---
+    add_surface_roughness(mesh_obj)
+    # rim_w is Radius (from screw modifier logic). total_height is Height.
+    add_rim_chipping(mesh_obj, total_height, rim_w)
+    
     return mesh_obj
 
 def create_floor(size=20, location=(4.5, 4.5, 0)):
@@ -222,6 +229,83 @@ def create_floor(size=20, location=(4.5, 4.5, 0)):
             bpy.ops.rigidbody.world_add()
         bpy.ops.rigidbody.object_add(type='PASSIVE')
         plane.rigid_body.collision_shape = 'MESH'
+
+def add_surface_roughness(obj):
+    """Adds excavated-like surface roughness."""
+    try:
+        # 1. Subdivision (Levels=2)
+        sub = obj.modifiers.new("Roughness_Sub", 'SUBSURF')
+        # User Feedback: "Reduce vertex". 2 -> 1
+        sub.levels = 1
+        sub.render_levels = 1
+        
+        # 2. Displacement (Fine Grain)
+        disp = obj.modifiers.new("Roughness_Disp", 'DISPLACE')
+        # User Feedback: "Too intense" -> Reduced to subtle realism.
+        disp.strength = 0.008 
+        
+        tex_name = "Excavated_Noise"
+        tex = bpy.data.textures.get(tex_name)
+        if not tex:
+            tex = bpy.data.textures.new(tex_name, 'CLOUDS')
+            tex.noise_scale = 0.05 # Higher freq
+        disp.texture = tex
+        
+        # Apply
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier="Roughness_Sub")
+        bpy.ops.object.modifier_apply(modifier="Roughness_Disp")
+    except Exception as e:
+        print(f"Roughness Error: {e}")
+
+def add_rim_chipping(obj, height, radius):
+    """Subtracts a random chunk from the rim."""
+    import math
+    # User Feedback: "Too intense" -> Revert to probability (40%)
+    if random.random() < 0.6: return # 60% chance SAFE, 40% chance CHIP
+    
+    try:
+        # Create Jagged Rock
+        # Realistic chip size: 5cm - 12cm
+        bpy.ops.mesh.primitive_cube_add(size=random.uniform(0.05, 0.12)) 
+        cutter = bpy.context.active_object
+        
+        # Make it jagged
+        sub = cutter.modifiers.new("Sub", 'SUBSURF')
+        sub.levels = 3
+        disp = cutter.modifiers.new("Disp", 'DISPLACE')
+        disp.strength = 0.1
+        tex = bpy.data.textures.new("Chip_Rock_Tex", 'VORONOI')
+        disp.texture = tex
+        
+        bpy.ops.object.modifier_apply(modifier="Sub")
+        bpy.ops.object.modifier_apply(modifier="Disp")
+        
+        # Position at Rim
+        angle = random.uniform(0, 6.28)
+        # Place firmly ON the rim radius
+        r_perturb = radius 
+        x = math.cos(angle) * r_perturb
+        y = math.sin(angle) * r_perturb
+        
+        # Height: Rim is at 'height'.
+        cutter.location = (x, y, height)
+        cutter.rotation_euler = (random.random(), random.random(), random.random())
+        
+        # Boolean Difference
+        bool_mod = obj.modifiers.new("Chip_Hole", 'BOOLEAN')
+        bool_mod.operation = 'DIFFERENCE'
+        bool_mod.object = cutter
+        bool_mod.solver = 'FAST'
+        
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier="Chip_Hole")
+        
+        # Cleanup
+        bpy.data.objects.remove(cutter, do_unlink=True)
+        
+    except Exception as e:
+        print(f"Chipping Error: {e}")
 
 def generate_verification_grid(rows=3, cols=3, spacing=3.0):
     # Cleanup previous random pots (but keep floor if exists, or recreate)
