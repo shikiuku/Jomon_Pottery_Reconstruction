@@ -2,7 +2,7 @@ import bpy
 import bmesh
 from collections import Counter
 
-def run_segmentation_v6_majority():
+def run_segmentation_v6_majority(target_objects=None):
     # 1. Setup Base Materials
     surf_mat = bpy.data.materials.get("RECON_Surface")
     if not surf_mat:
@@ -16,7 +16,11 @@ def run_segmentation_v6_majority():
         (0.2, 0.8, 0.2, 1), (0.8, 0.2, 0.8, 1), (0.2, 0.2, 0.8, 1)
     ]
 
-    shards = [obj for obj in bpy.data.objects if "Lathe_Pot_cell" in obj.name and obj.type == 'MESH']
+    if target_objects:
+        shards = target_objects
+    else:
+        # Default selector for testing (supports RND_Pot and Pot_XXX)
+        shards = [obj for obj in bpy.data.objects if ("RND_Pot" in obj.name or "Pot_" in obj.name) and ("cell" in obj.name.lower() or "Cell" in obj.name) and obj.type == 'MESH']
     
     current_frame = bpy.context.scene.frame_current
     bpy.context.scene.frame_set(1)
@@ -40,9 +44,11 @@ def run_segmentation_v6_majority():
         attr = obj.data.attributes.get('Inner_faces')
         inner_faces = []
         if attr:
-            for i, face in enumerate(bm.faces):
-                if attr.data[i].value:
-                    inner_faces.append(face)
+            try:
+                for i, face in enumerate(bm.faces):
+                    if attr.data[i].value:
+                        inner_faces.append(face)
+            except: pass
         
         if not inner_faces:
             bm.free()
@@ -136,4 +142,9 @@ def run_segmentation_v6_majority():
 
     return f"V6 Majority-Vote Complete: Found {total_facets_found} facets."
 
-print(run_segmentation_v6_majority())
+# Alias for external tools
+def apply_segmentation_to_objects(objects):
+    return run_segmentation_v6_majority(target_objects=objects)
+
+if __name__ == "__main__":
+    print(run_segmentation_v6_majority())

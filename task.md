@@ -4,10 +4,10 @@
 - [x] Setup Git Repository (Version Control) <!-- id: 40 -->
 - [x] Determine method (Search vs Generate vs Code) <!-- id: 1 -->
 - [x] Execute creation of earthenware (Re-import) <!-- id: 2 -->
-- [x] Apply fracture to the model (User Manual Operation) <!-- id: 5 -->
-- [ ] separate fragments and verify (User Manual Operation) <!-- id: 6 -->
+- [x] Apply fracture to the model (Script + Manual Apply) <!-- id: 5 -->
+- [ ] separate fragments and verify (Manual Apply required) <!-- id: 6 -->
 - [x] Install RBDLab Addon (User Manual Operation) <!-- id: 10 -->
-- [x] Fracture and Simulate with RBDLab <!-- id: 11 -->
+- [x] Fracture and Simulate with RBDLab (Partial Automation) <!-- id: 11 -->
 - [x] Add Floor and Gravity (Physics Setup) <!-- id: 12 -->
 
 ## Phase 3: Feasibility Verification (Technical Proof of Concept)
@@ -21,10 +21,18 @@
 
 ## Phase 4: AI Training Data Generation (Sim2Real)
 - [x] Create AI Training Plan (Augmentation & Labels) <!-- id: 20 -->
-- [ ] Step 1: Script for Procedural Pot Generation (Variety) <!-- id: 21 -->
+- [x] Step 1: Script for Procedural Pot Generation (Variety) <!-- id: 21 -->
 - [ ] Step 2: Script for Wear & Tear (Erosion/Deletion) <!-- id: 22 -->
-- [ ] Step 3: Script for Point Cloud & Adjacency Export (Labeling) <!-- id: 23 -->
-- [ ] Step 4: Verify Data Quality (Visual Check) <!-- id: 24 -->
+- [x] Step 3: Script for Point Cloud & Adjacency Export (Labeling) <!-- id: 23 -->
+- [x] Step 4: Verify Data Quality (Visual Check) <!-- id: 24 -->
+- [x] Tool: Create `mass_production.py` (Panel "土器(Pottery)") <!-- id: 50 -->
+- [/] Execute Mass Production (Target: 500 pots) <!-- id: 51 -->
+    - [x] Fix: Resolve "Shard 24" glitch (Open Bottom V5)
+    - [/] Refine: Improve Pottery Generation Logic (V6)
+        - [x] Restore Bottom (Flat & Safe Z-height)
+        - [x] Add Shape Variety (Yayoi Style: Parametric Randomization)
+    - [ ] 1. Continuous Loop: Apply -> Export & Next (Semi-Auto)
+    - [ ] 2. Verify Output Count
 
 
 
