@@ -204,7 +204,8 @@ def create_random_pot(name, location):
     # --- ADD WEATHERING (Excavated Look) ---
     add_surface_roughness(mesh_obj)
     # rim_w is Radius (from screw modifier logic). total_height is Height.
-    add_rim_chipping(mesh_obj, total_height, rim_w)
+    # User requested to remove chipping entirely.
+    # add_rim_chipping(mesh_obj, total_height, rim_w)
     
     return mesh_obj
 
@@ -261,7 +262,6 @@ def add_surface_roughness(obj):
 def add_rim_chipping(obj, height, radius):
     """Subtracts a random chunk from the rim."""
     import math
-    # User Feedback: "Too intense" -> Revert to probability (40%)
     if random.random() < 0.6: return # 60% chance SAFE, 40% chance CHIP
     
     try:
